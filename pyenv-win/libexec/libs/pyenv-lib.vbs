@@ -48,6 +48,7 @@ Dim strDirLibs
 Dim strDirShims
 Dim strDirWiX
 Dim strDBFile
+Dim strShimExe
 Dim strVerFile
 strCurrent   = objfs.GetAbsolutePathName(".")
 strPyenvHome = objfs.getParentFolderName(objfs.getParentFolderName(WScript.ScriptFullName))
@@ -58,6 +59,7 @@ strDirLibs   = strPyenvHome & "\libexec"
 strDirShims  = strPyenvHome & "\shims"
 strDirWiX    = strPyenvHome & "\bin\WiX"
 strDBFile    = strPyenvHome & "\.versions_cache.xml"
+strShimExe   = strPyenvHome & "\bin\shim\shim.exe"
 strVerFile   = "\.python-version"
 
 Function GetCurrentVersionsGlobal()
@@ -324,26 +326,13 @@ End Sub
 
 ' pyenv - bin - windows
 Sub WriteWinScript(baseName)
-    ' WScript.echo "kkotari: pyenv-lib.vbs write win script..!"
     Dim filespec
-    filespec = strDirShims &"\"& baseName &".bat"
+    filespec = strDirShims & "\" & baseName & ".exe"
     If Not objfs.FileExists(filespec) Then
-        If InStr(1, baseName, "pip") = 1 Then
-            With objfs.CreateTextFile(filespec)
-                .WriteLine("@echo off")
-                .WriteLine("chcp 1250 > NUL")
-                .WriteLine("call pyenv exec %~n0 %*")
-                .WriteLine("call pyenv rehash")
-                .Close
-            End With
-        Else
-            With objfs.CreateTextFile(filespec)
-                .WriteLine("@echo off")
-                .WriteLine("chcp 1250 > NUL")
-                .WriteLine("call pyenv exec %~n0 %*")
-                .Close
-            End With
+        If Not objfs.FolderExists(strDirShims) Then
+            objfs.CreateFolder(strDirShims)
         End If
+        objfs.CopyFile strShimExe, filespec
     End If
 End Sub
 
